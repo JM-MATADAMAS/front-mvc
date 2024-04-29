@@ -63,7 +63,7 @@
         <v-card>
           <v-card-title>Registrar usuario</v-card-title>
           <v-card-text>
-            <v-form>
+            <v-form ref="form">
               Correo
               <v-text-field v-model="email" placeholder="Escribe tu correo" type="email" :rules="correo" />
               Contraseña
@@ -193,6 +193,32 @@ export default {
         })
     },
     agregar () {
+      this.validForm = this.$refs.form.validate()
+      if (this.validForm) {
+        const sendData = {
+          id: Date.now().toLocaleString(),
+          email: this.email,
+          password: this.passwordUser
+        }
+        // eslint-disable-next-line no-console
+        console.log('@@ data =>', sendData)
+        const url = '/signup'
+        this.$axios.post(url, sendData)
+          .then((res) => {
+            // eslint-disable-next-line no-console
+            console.log('@@ res =>', res)
+            if (res.data.message === 'Usuario registrado satisfactoriamente') {
+              this.getAllUsers()
+              this.showNuevo = false
+            }
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.log('@@ err =>', err)
+          })
+      } else {
+        alert('Faltan datos')
+      }
     }
   }
 }
