@@ -34,6 +34,13 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
     </v-app-bar>
     <v-main>
+      <ui-alert
+        v-if="showAlert"
+        :message="mensaje"
+        :color="color"
+        :type="type"
+        style="z-index: 10 !important; top:-50px !important;"
+      />
       <v-container>
         <Nuxt />
       </v-container>
@@ -65,8 +72,25 @@ export default {
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: 'CRUD con Firebase y NUXT'
+      title: 'CRUD con Firebase y NUXT',
+      showAlert: false,
+      mensaje: '',
+      color: '',
+      type: ''
     }
+  },
+  created () {
+    this.$nuxt.$on('evento', (data) => {
+      // eslint-disable-next-line no-console
+      console.log('@@@ data login =>', data)
+      this.mensaje = data.message
+      this.color = data.color
+      this.type = data.type
+      this.showAlert = true
+      setTimeout(() => {
+        this.showAlert = false
+      }, data.time || 5000)
+    })
   }
 }
 </script>

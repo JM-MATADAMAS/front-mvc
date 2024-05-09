@@ -90,6 +90,40 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <v-dialog v-model="showUpdate" width="400" persistent>
+        <v-card>
+          <v-card-title>Modificar usuario</v-card-title>
+          <v-card-text>
+            <v-form
+              ref="formUpdate"
+              v-model="validFormUpdate"
+            >
+              Correo
+              <v-text-field v-model="userToUpdate.email" placeholder="Escribe tu correo" type="email" :rules="correo" />
+              Contraseña
+              <v-text-field v-model="userToUpdate.passwordUser" placeholder="Escribe tu contraseña" type="password" :rules="password" />
+            </v-form>
+          </v-card-text>
+          <v-card-actions>
+            <v-row>
+              <v-col cols="6">
+                <v-btn block color="success" @click="modificar">
+                  <span style="color: white; text-transform: none;">
+                    Modificar
+                  </span>
+                </v-btn>
+              </v-col>
+              <v-col cols="6">
+                <v-btn block color="error" @click="showUpdate= false">
+                  <span style="color: white; text-transform: none;">
+                    Cancelar
+                  </span>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-col>
   </div>
 </template>
@@ -120,12 +154,15 @@ export default {
       ],
       token: null,
       usuarios: [],
-      showDelete: false,
       idToDelete: null,
+      showDelete: false,
       showNuevo: false,
+      showUpdate: false,
       validForm: false,
+      validFormUpdate: false,
       email: null,
       passwordUser: null,
+      userToUpdate: {},
       password: [
         v => (v && v.length > 6) || 'La contraseña debe tener más de 6 caracteres'
       ],
@@ -180,6 +217,11 @@ export default {
           // eslint-disable-next-line no-console
           console.log('@@@ res => ', res)
           if (res.data.message === 'User Deleted Successfully') {
+            this.$nuxt.$emit('evento', {
+              message: res.data.message,
+              color: 'error',
+              type: 'error'
+            })
             this.showDelete = false
             this.getAllUsers()
             this.usuarios = res.data.users
@@ -196,7 +238,7 @@ export default {
       this.validForm = this.$refs.form.validate()
       if (this.validForm) {
         const sendData = {
-          id: Date.now().toLocaleString(),
+          id: Date.now().toString(),
           email: this.email,
           password: this.passwordUser
         }
@@ -208,8 +250,58 @@ export default {
             // eslint-disable-next-line no-console
             console.log('@@ res =>', res)
             if (res.data.message === 'Usuario registrado satisfactoriamente') {
+              this.$nuxt.$emit('evento', {
+                message: res.data.message,
+                color: 'success',
+                type: 'success',
+                time: 2000
+              })
               this.getAllUsers()
               this.showNuevo = false
+              this.email = ''
+              this.passwordUser = ''
+            }
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.log('@@ err =>', err)
+          })
+      } else {
+        alert('Faltan datos')
+      }
+    },
+    actualizarUsuario (user) {
+      this.userToUpdate = user
+      this.showUpdate = true
+    },
+    modificar () {
+      this.validFormUpdate = this.$refs.formUpdate.validate()
+      if (this.validFormUpdate) {
+        const sendData = {
+          id: this.userToUpdate.id,
+          email: this.userToUpdate.email,
+          password: this.userToUpdate.password
+        }
+        this.$axios.defaults.headers.common.Authorization = `Bearer ${this.token}`
+
+        // eslint-disable-next-line no-console
+        console.log('@@ data =>', sendData)
+        const url = `/update-user/${sendData.id}`
+        this.$axios.put(url, sendData)
+          .then((res) => {
+            // eslint-disable-next-line no-console
+            console.log('@@ res =>', res)
+            if (res.data.message === 'User Updated Successfully') {
+              this.$nuxt.$emit('evento', {
+                message: res.data.message,
+                color: 'warning',
+                type: 'success',
+                time: 3000
+              })
+              this.getAllUsers()
+              this.showUpdate = false
+              this.email = ''
+              this.passwordUser = ''
             }
           })
           .catch((err) => {

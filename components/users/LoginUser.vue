@@ -120,7 +120,7 @@ export default {
       this.validFormNuevo = this.$refs.formNuevo.validate()
       if (this.validFormNuevo) {
         const sendData = {
-          id: Date.now().toLocaleString(),
+          id: Date.now().toString(),
           email: this.emailNuevo,
           password: this.passwordUserNuevo,
           showNuevo: false
@@ -142,6 +142,11 @@ export default {
             }
           })
           .catch((err) => {
+            this.$emit('evento', {
+              message: 'Algo salió mal',
+              color: 'error',
+              type: 'error'
+            })
             // eslint-disable-next-line no-console
             console.log('@@ err =>', err)
           })
