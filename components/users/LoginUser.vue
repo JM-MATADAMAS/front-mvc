@@ -29,15 +29,45 @@
         </v-col>
       </v-row>
     </v-card-actions>
-    <v-dialog v-model="showNuevo" width="400" persistent>
+    <v-dialog v-model="showNuevo" width="500" persistent>
       <v-card>
         <v-card-title>Registrar usuario</v-card-title>
         <v-card-text>
           <v-form ref="formNuevo">
-            Correo
-            <v-text-field v-model="emailNuevo" placeholder="Escribe tu correo" type="email" :rules="correo" />
-            Contraseña
-            <v-text-field v-model="passwordUserNuevo" placeholder="Escribe tu contraseña" type="password" :rules="password" />
+            <v-row>
+              <v-col cols="6">
+                Nombre
+                <v-text-field v-model="nombreNuevo" placeholder="Escribe tu nombre" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Apellido Paterno
+                <v-text-field v-model="apaternoNuevo" placeholder="Escribe tu apellido paterno" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Apellido Materno
+                <v-text-field v-model="amaternoNuevo" placeholder="Escribe tu apellido materno" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Direccion
+                <v-text-field v-model="direccionNuevo" placeholder="Escribe tu direccion" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Telefono
+                <v-text-field v-model="telefonoNuevo" placeholder="Escribe tu telefono" type="number" :rules="telefono" />
+              </v-col>
+              <v-col cols="6">
+                Estado
+                <v-select v-model="estadoNuevo" :items="estados" placeholder="ingresa tu estado" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Correo
+                <v-text-field v-model="emailNuevo" placeholder="Escribe tu correo" type="email" :rules="correo" />
+              </v-col>
+              <v-col cols="6">
+                Contraseña
+                <v-text-field v-model="passwordUserNuevo" placeholder="Escribe tu contraseña" type="password" :rules="password" />
+              </v-col>
+            </v-row>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -70,11 +100,21 @@ export default {
       validForm: false,
       email: null,
       passwordUser: null,
+      nombreNuevo: null,
+      apaternoNuevo: null,
+      amaternoNuevo: null,
+      direccionNuevo: null,
+      telefonoNuevo: null,
+      estadoNuevo: null,
+      estados: ['Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Estado de México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'],
       emailNuevo: null,
       passwordUserNuevo: null,
       showNuevo: false,
       required: [
         v => !!v || 'Campo requerido'
+      ],
+      telefono: [
+        v => (v && v.length === 10) || 'El numero de telefono debe poseer 10 digitos'
       ],
       password: [
         v => (v && v.length > 6) || 'La contraseña debe tener más de 6 caracteres'
@@ -121,6 +161,12 @@ export default {
       if (this.validFormNuevo) {
         const sendData = {
           id: Date.now().toString(),
+          nombre: this.nombreNuevo,
+          apaterno: this.apaternoNuevo,
+          amaterno: this.amaternoNuevo,
+          direccion: this.direccionNuevo,
+          telefono: this.telefonoNuevo,
+          estado: this.estadoNuevo,
           email: this.emailNuevo,
           password: this.passwordUserNuevo,
           showNuevo: false

@@ -1,131 +1,226 @@
 <template>
-  <div>
-    <v-col cols="12">
-      <v-row>
-        <v-btn block color="success" @click="showNuevo = true">
-          <span style="color: white; text-transform: none;">
-            Usuario Nuevo
-          </span>
-        </v-btn>
-      </v-row>
-      <v-row class="mt-3">
-        <v-data-table
-          :headers="headers"
-          :items="usuarios"
-          elevation="0"
-          style="width: 100% !important;"
-        >
-          <template #[`item.acciones`]="{item}">
+  <v-col cols="20">
+    <v-row>
+      <v-btn block color="success" @click="showNuevo = true">
+        <span style="color: white; text-transform: none;">
+          Usuario Nuevo
+        </span>
+      </v-btn>
+    </v-row>
+    <v-row class="mt-3">
+      <v-data-table :headers="headers" :items="usuarios" elevation="0" style="width: 100% !important;">
+        <template #[`item.acciones`]="{ item }">
+          <v-row>
+            <v-col cols="6">
+              <v-btn icon color="error" @click="borrarUsuario(item.id)">
+                <v-icon>
+                  mdi-account-minus
+                </v-icon>
+              </v-btn>
+            </v-col>
+            <v-col cols="6">
+              <v-btn icon color="warning" @click="actualizarUsuario(item)">
+                <v-icon>
+                  mdi-account-eye
+                </v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </template>
+      </v-data-table>
+    </v-row>
+    <v-dialog v-model="showDelete" width="400" persistent>
+      <v-card>
+        <v-card-title>Usuarios</v-card-title>
+        <v-card-text>Are you sure?</v-card-text>
+        <v-card-actions>
+          <v-row>
+            <v-col cols="6">
+              <v-btn block color="error" @click="borrar">
+                <span style="color: white; text-transform: none;">
+                  Borrar
+                </span>
+              </v-btn>
+            </v-col>
+            <v-col cols="6">
+              <v-btn block color="success" @click="showDelete = false">
+                <span style="color: white; text-transform: none;">
+                  Cancelar
+                </span>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showNuevo" width="500" persistent>
+      <v-card>
+        <v-card-title>Registrar usuario</v-card-title>
+        <v-card-text>
+          <v-form ref="form">
             <v-row>
               <v-col cols="6">
-                <v-btn icon color="error" @click="borrarUsuario(item.id)">
-                  <v-icon>
-                    mdi-account-minus
-                  </v-icon>
-                </v-btn>
+                Nombre
+                <v-text-field v-model="nombreNuevo" placeholder="Escribe tu nombre" type="text" :rules="required" />
               </v-col>
               <v-col cols="6">
-                <v-btn icon color="warning" @click="actualizarUsuario(item)">
-                  <v-icon>
-                    mdi-account-eye
-                  </v-icon>
-                </v-btn>
+                Apellido Paterno
+                <v-text-field v-model="apaternoNuevo" placeholder="Escribe tu apellido paterno" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Apellido Materno
+                <v-text-field v-model="amaternoNuevo" placeholder="Escribe tu apellido materno" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Direccion
+                <v-text-field v-model="direccionNuevo" placeholder="Escribe tu direccion" type="text" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Telefono
+                <v-text-field v-model="telefonoNuevo" placeholder="Escribe tu telefono" type="number" :rules="telefono" />
+              </v-col>
+              <v-col cols="6">
+                Estado
+                <v-select v-model="estadoNuevo" :items="estados" placeholder="ingresa tu estado" :rules="required" />
+              </v-col>
+              <v-col cols="6">
+                Correo
+                <v-text-field v-model="email" placeholder="Escribe tu correo" type="email" :rules="correo" />
+              </v-col>
+              <v-col cols="6">
+                Contraseña
+                <v-text-field
+                  v-model="passwordUser"
+                  placeholder="Escribe tu contraseña"
+                  type="password"
+                  :rules="password"
+                />
               </v-col>
             </v-row>
-          </template>
-        </v-data-table>
-      </v-row>
-      <v-dialog v-model="showDelete" width="400" persistent>
-        <v-card>
-          <v-card-title>Usuarios</v-card-title>
-          <v-card-text>Are you sure?</v-card-text>
-          <v-card-actions>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-row>
+            <v-col cols="6">
+              <v-btn block color="success" @click="agregar">
+                <span style="color: white; text-transform: none;">
+                  Agregar
+                </span>
+              </v-btn>
+            </v-col>
+            <v-col cols="6">
+              <v-btn block color="error" @click="showNuevo = false">
+                <span style="color: white; text-transform: none;">
+                  Cancelar
+                </span>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="showUpdate" width="400" persistent>
+      <v-card>
+        <v-card-title>Modificar usuario</v-card-title>
+        <v-card-text>
+          <v-form ref="formUpdate" v-model="validFormUpdate">
             <v-row>
               <v-col cols="6">
-                <v-btn block color="error" @click="borrar">
-                  <span style="color: white; text-transform: none;">
-                    Borrar
-                  </span>
-                </v-btn>
+                Nombre
+                <v-text-field
+                  v-model="userToUpdate.nombre"
+                  placeholder="Escribe tu nombre"
+                  type="text"
+                  :rules="required"
+                />
               </v-col>
               <v-col cols="6">
-                <v-btn block color="success" @click="showDelete = false">
-                  <span style="color: white; text-transform: none;">
-                    Cancelar
-                  </span>
-                </v-btn>
+                Apellido Paterno
+                <v-text-field
+                  v-model="userToUpdate.apaterno"
+                  placeholder="Escribe tu apellido paterno"
+                  type="text"
+                  :rules="required"
+                />
+              </v-col>
+              <v-col cols="6">
+                Apellido Materno
+                <v-text-field
+                  v-model="userToUpdate.amaterno"
+                  placeholder="Escribe tu apellido materno"
+                  type="text"
+                  :rules="required"
+                />
+              </v-col>
+              <v-col cols="6">
+                Direccion
+                <v-text-field
+                  v-model="userToUpdate.direccion"
+                  placeholder="Escribe tu direccion"
+                  type="text"
+                  :rules="required"
+                />
+              </v-col>
+              <v-col cols="6">
+                Telefono
+                <v-text-field
+                  v-model="userToUpdate.telefono"
+                  placeholder="Escribe tu telefono"
+                  type="number"
+                  :rules="telefono"
+                />
+              </v-col>
+              <v-col cols="6">
+                Estado
+                <v-select
+                  v-model="userToUpdate.estado"
+                  :items="estados"
+                  placeholder="ingresa tu estado"
+                  :rules="required"
+                />
+              </v-col>
+              <v-col cols="6">
+                Correo
+                <v-text-field
+                  v-model="userToUpdate.email"
+                  placeholder="Escribe tu correo"
+                  type="email"
+                  :rules="correo"
+                />
+              </v-col>
+              <v-col cols="6">
+                Contraseña
+                <v-text-field
+                  v-model="userToUpdate.password"
+                  placeholder="Escribe tu contraseña"
+                  type="password"
+                  :rules="password"
+                />
               </v-col>
             </v-row>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="showNuevo" width="400" persistent>
-        <v-card>
-          <v-card-title>Registrar usuario</v-card-title>
-          <v-card-text>
-            <v-form ref="form">
-              Correo
-              <v-text-field v-model="email" placeholder="Escribe tu correo" type="email" :rules="correo" />
-              Contraseña
-              <v-text-field v-model="passwordUser" placeholder="Escribe tu contraseña" type="password" :rules="password" />
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-row>
-              <v-col cols="6">
-                <v-btn block color="success" @click="agregar">
-                  <span style="color: white; text-transform: none;">
-                    Agregar
-                  </span>
-                </v-btn>
-              </v-col>
-              <v-col cols="6">
-                <v-btn block color="error" @click="showNuevo= false">
-                  <span style="color: white; text-transform: none;">
-                    Cancelar
-                  </span>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog v-model="showUpdate" width="400" persistent>
-        <v-card>
-          <v-card-title>Modificar usuario</v-card-title>
-          <v-card-text>
-            <v-form
-              ref="formUpdate"
-              v-model="validFormUpdate"
-            >
-              Correo
-              <v-text-field v-model="userToUpdate.email" placeholder="Escribe tu correo" type="email" :rules="correo" />
-              Contraseña
-              <v-text-field v-model="userToUpdate.passwordUser" placeholder="Escribe tu contraseña" type="password" :rules="password" />
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-row>
-              <v-col cols="6">
-                <v-btn block color="success" @click="modificar">
-                  <span style="color: white; text-transform: none;">
-                    Modificar
-                  </span>
-                </v-btn>
-              </v-col>
-              <v-col cols="6">
-                <v-btn block color="error" @click="showUpdate= false">
-                  <span style="color: white; text-transform: none;">
-                    Cancelar
-                  </span>
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-col>
-  </div>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-row>
+            <v-col cols="6">
+              <v-btn block color="success" @click="modificar">
+                <span style="color: white; text-transform: none;">
+                  Modificar
+                </span>
+              </v-btn>
+            </v-col>
+            <v-col cols="6">
+              <v-btn block color="error" @click="showUpdate = false">
+                <span style="color: white; text-transform: none;">
+                  Cancelar
+                </span>
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-col>
 </template>
 
 <script>
@@ -138,6 +233,42 @@ export default {
           align: 'center',
           sortable: true,
           value: 'id'
+        },
+        {
+          text: 'NOMBRE',
+          align: 'center',
+          sortable: true,
+          value: 'nombre'
+        },
+        {
+          text: 'APELLIDO PATERNO',
+          align: 'center',
+          sortable: true,
+          value: 'apaterno'
+        },
+        {
+          text: 'APELLIDO MATERNO',
+          align: 'center',
+          sortable: true,
+          value: 'amaterno'
+        },
+        {
+          text: 'DIRECCIÓN',
+          align: 'center',
+          sortable: false,
+          value: 'direccion'
+        },
+        {
+          text: 'TELÉFONO',
+          align: 'center',
+          sortable: true,
+          value: 'telefono'
+        },
+        {
+          text: 'ESTADO',
+          align: 'center',
+          sortable: true,
+          value: 'estado'
         },
         {
           text: 'E-MAIL',
@@ -162,7 +293,20 @@ export default {
       validFormUpdate: false,
       email: null,
       passwordUser: null,
+      nombreNuevo: null,
+      apaternoNuevo: null,
+      amaternoNuevo: null,
+      direccionNuevo: null,
+      telefonoNuevo: null,
+      estadoNuevo: null,
+      estados: ['Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Estado de México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'],
       userToUpdate: {},
+      required: [
+        v => !!v || 'Campo requerido'
+      ],
+      telefono: [
+        v => (v && v.length === 10) || 'El numero de telefono debe poseer 10 digitos'
+      ],
       password: [
         v => (v && v.length > 6) || 'La contraseña debe tener más de 6 caracteres'
       ],
@@ -239,6 +383,12 @@ export default {
       if (this.validForm) {
         const sendData = {
           id: Date.now().toString(),
+          nombre: this.nombreNuevo,
+          apaterno: this.apaternoNuevo,
+          amaterno: this.amaternoNuevo,
+          direccion: this.direccionNuevo,
+          telefono: this.telefonoNuevo,
+          estado: this.estadoNuevo,
           email: this.email,
           password: this.passwordUser
         }
